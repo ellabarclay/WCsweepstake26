@@ -66,20 +66,80 @@ async function updateResults(){
   await fs.writeFile(RESULTS_PATH, JSON.stringify(updated, null, 2) + "\n");
   return updated;
 }
-async function updateCards(results){
-  const cards = await readJson(CARDS_PATH, {teams:{}});
+async function updateCards(results) {
   const participants = await readJson(PARTICIPANTS_PATH, []);
-  const teams = {...cards.teams};
-  for(const p of participants) teams[p.team] = teams[p.team] || {redCards:0};
-  // ESPN does not always expose reliable team red-card aggregates in the simple scoreboard feed.
-  // This keeps existing/manual red-card totals safe while still timestamping the file.
-  const updated = {
-    ...cards,
-    updatedAt: new Date().toISOString(),
-    source: "Red cards preserved from data/cards.json. Edit manually if ESPN does not expose card totals for this match.",
-    teams
+  const existing = await readJson(CARDS_PATH, { teams: {} });
+
+  const ESPN_DISCIPLINE_URL =
+    "https://www.espn.com/soccer/stats/_/league/FIFA.WORLD/view/discipline";
+
+  const aliases = {
+    "Bosnia-Herzegovina": "Bosnia and Herzegovina",
+    "Ivory Coast": "Côte d'Ivoire",
+    "South Korea": "Korea Republic",
+    "Congo DR": "Congo DR",
+    "DR Congo": "Congo DR"
   };
-  await fs.writeFile(CARDS_PATH, JSON.stringify(updated, null, 2) + "\n");
+
+  const assignedTeams = new Set(participants.map(p => p.team));
+  const teams = {};
+
+  for (const p of participants) {
+    teams[p.team] = { redCards: existing.teams?.[p.team]?.redCards || 0 };
+  }
+
+  try {
+    const html = await fetch(ESPN_DISCIPLINE_URL, {
+      headers: { "user-agent": "Mozilla/5.0 WC26 sweepstake updater" }
+    }).then(r => r.text());
+
+    const text = html
+      .replace(/<script[\s\S]*?<\/script>/g, " ")
+      .replace(/<style[\s\S]*?<\/style>/g, " ")
+      .replace(/<[^>]+>/g, " ")
+      .replace(/&nbsp;/g, " ")
+      .replace(/\s+/g, " ");
+
+    const espnNames = [
+      "Algeria", "Egypt", "Congo DR", "Paraguay", "New Zealand", "Canada",
+      "Ecuador", "Tunisia", "Saudi Arabia", "Ivory Coast", "Austria",
+      "Germany", "Morocco", "South Africa", "Portugal", "France", "Panama",
+      "Ghana", "Senegal", "Uzbekistan", "Haiti", "South Korea", "Switzerland",
+      "Croatia", "Bosnia-Herzegovina", "Uruguay", "Brazil"
+    ];
+
+    for (const espnName of espnNames) {
+      const canonical = aliases[espnName] || espnName;
+      if (!assignedTeams.has(canonical)) continue;
+
+      const pattern = new RegExp(
+        `${espnName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)`
+      );
+
+      const match = text.match(pattern);
+      if (match) {
+        teams[canonical] = { redCards: Number(match[3]) };
+      }
+    }
+
+    await fs.writeFile(
+      CARDS_PATH,
+      JSON.stringify({
+        updatedAt: new Date().toISOString(),
+        source: ESPN_DISCIPLINE_URL,
+        teams
+      }, null, 2) + "\n"
+    );
+  } catch (error) {
+    await fs.writeFile(
+      CARDS_PATH,
+      JSON.stringify({
+        ...existing,
+        updatedAt: new Date().toISOString(),
+        source: "Previous red-card data preserved; ESPN discipline fetch failed",
+        error: String(error.message || error),
+        teams
+      }, null, 2) + "\n"
+    );
+  }
 }
-const results = await updateResults();
-await updateCards(results);
