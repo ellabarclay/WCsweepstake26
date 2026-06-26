@@ -19,8 +19,6 @@ jobs:
         with:
           node-version: 20
 
-      - run: npm install
-
       - name: Update data
         run: node update-data.mjs
         env:
