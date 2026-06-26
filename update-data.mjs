@@ -1,152 +1,130 @@
 import fs from "node:fs/promises";
 
+const API_KEY = process.env.API_FOOTBALL_KEY;
+
+const PARTICIPANTS_PATH = "data/participants.json";
 const RESULTS_PATH = "data/results.json";
 const CARDS_PATH = "data/cards.json";
-const PARTICIPANTS_PATH = "data/participants.json";
-const ESPN_SCOREBOARDS = [
-  "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=500",
-  "https://site.web.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?limit=500"
-];
-const ALIASES = new Map(Object.entries({
-  "Ivory Coast":"Côte d'Ivoire", "Cote d'Ivoire":"Côte d'Ivoire", "Côte d’Ivoire":"Côte d'Ivoire",
-  "DR Congo":"Congo DR", "Democratic Republic of the Congo":"Congo DR", "Congo":"Congo DR",
-  "South Korea":"Korea Republic", "Korea Republic":"Korea Republic", "Korea":"Korea Republic",
-  "United States":"United States", "USA":"United States", "Curacao":"Curaçao"
-}));
-const norm = (name) => ALIASES.get(name) || name;
-async function readJson(path, fallback){ try { return JSON.parse(await fs.readFile(path, "utf8")); } catch { return fallback; } }
-async function fetchJson(url){ const res = await fetch(url, {headers:{"user-agent":"Mozilla/5.0 WC26 sweepstake updater"}}); if(!res.ok) throw new Error(`${res.status} ${res.statusText}`); return res.json(); }
-function statusText(comp){ const type = comp?.status?.type; if(type?.completed) return "FT"; if(type?.state === "in") return "Live"; return type?.description || "Scheduled"; }
-function fromEspnEvent(event){
-  const comp = event.competitions?.[0]; const competitors = comp?.competitors || [];
-  const home = competitors.find(c => c.homeAway === "home") || competitors[0];
-  const away = competitors.find(c => c.homeAway === "away") || competitors[1];
-  if(!home || !away) return null;
-  const homeName = norm(home.team?.displayName || home.team?.shortDisplayName || home.team?.name);
-  const awayName = norm(away.team?.displayName || away.team?.shortDisplayName || away.team?.name);
-  return {
-    id: String(event.id),
-    stage: event.season?.slug || event.name || "World Cup",
-    date: event.date,
-    home: homeName,
-    away: awayName,
-    homeScore: home.score === undefined || home.score === "" ? null : Number(home.score),
-    awayScore: away.score === undefined || away.score === "" ? null : Number(away.score),
-    status: statusText(comp)
-  };
-}
-function mergeMatches(existing, fresh){
-  const byId = new Map((existing || []).map(m => [String(m.id), m]));
-  for(const m of fresh){
-    if(!m) continue;
-    const old = byId.get(String(m.id));
-    byId.set(String(m.id), {...old, ...m});
-  }
-  return [...byId.values()].sort((a,b)=>new Date(a.date || 0)-new Date(b.date || 0));
-}
-async function updateResults(){
-  const current = await readJson(RESULTS_PATH, {matches:[]});
-  const attempts = [];
-  let fresh = [];
-  for(const url of ESPN_SCOREBOARDS){
-    try{
-      const json = await fetchJson(url);
-      fresh = (json.events || []).map(fromEspnEvent).filter(Boolean);
-      attempts.push({url, ok:true, events:fresh.length});
-      if(fresh.length) break;
-    }catch(error){ attempts.push({url, ok:false, error:String(error.message || error)}); }
-  }
-  const updated = {
-    ...current,
-    updatedAt: new Date().toISOString(),
-    source: fresh.length ? "ESPN scoreboard via GitHub Actions" : "Previous local results preserved; live fetch failed",
-    diagnostics: attempts,
-    matches: fresh.length ? mergeMatches(current.matches, fresh) : current.matches
-  };
-  await fs.writeFile(RESULTS_PATH, JSON.stringify(updated, null, 2) + "\n");
-  return updated;
-}
-async function updateCards(results) {
-  const participants = await readJson(PARTICIPANTS_PATH, []);
-  const existing = await readJson(CARDS_PATH, { teams: {} });
 
-  const ESPN_DISCIPLINE_URL =
-    "https://www.espn.com/soccer/stats/_/league/FIFA.WORLD/view/discipline";
+// You may need to change this if API-Football uses a different World Cup league id.
+// API-Football uses structured endpoints for fixtures and events. 
+const LEAGUE_ID = 1;
+const SEASON = 2026;
 
+if (!API_KEY) {
+  throw new Error("Missing API_FOOTBALL_KEY GitHub secret");
+}
+
+async function readJson(path, fallback) {
+  try {
+    return JSON.parse(await fs.readFile(path, "utf8"));
+  } catch {
+    return fallback;
+  }
+}
+
+async function api(path) {
+  const res = await fetch(`https://v3.football.api-sports.io${path}`, {
+    headers: { "x-apisports-key": API_KEY }
+  });
+
+  if (!res.ok) {
+    throw new Error(`API request failed ${res.status}: ${await res.text()}`);
+  }
+
+  return res.json();
+}
+
+function teamName(name) {
   const aliases = {
     "Bosnia-Herzegovina": "Bosnia and Herzegovina",
+    "Bosnia & Herzegovina": "Bosnia and Herzegovina",
     "Ivory Coast": "Côte d'Ivoire",
+    "Cote d'Ivoire": "Côte d'Ivoire",
     "South Korea": "Korea Republic",
-    "Congo DR": "Congo DR",
-    "DR Congo": "Congo DR"
+    "Korea Republic": "Korea Republic",
+    "DR Congo": "Congo DR",
+    "Congo DR": "Congo DR"
   };
 
+  return aliases[name] || name;
+}
+
+async function main() {
+  const participants = await readJson(PARTICIPANTS_PATH, []);
   const assignedTeams = new Set(participants.map(p => p.team));
-  const teams = {};
+
+  const fixtureData = await api(`/fixtures?league=${LEAGUE_ID}&season=${SEASON}`);
+  const fixtures = fixtureData.response || [];
+
+  const goalsConceded = {};
+  const redCards = {};
 
   for (const p of participants) {
-    teams[p.team] = { redCards: existing.teams?.[p.team]?.redCards || 0 };
+    goalsConceded[p.team] = 0;
+    redCards[p.team] = 0;
   }
 
-  try {
-    const html = await fetch(ESPN_DISCIPLINE_URL, {
-      headers: { "user-agent": "Mozilla/5.0 WC26 sweepstake updater" }
-    }).then(r => r.text());
+  for (const item of fixtures) {
+    const status = item.fixture?.status?.short;
+    const isFinished = ["FT", "AET", "PEN"].includes(status);
+    if (!isFinished) continue;
 
-    const text = html
-      .replace(/<script[\s\S]*?<\/script>/g, " ")
-      .replace(/<style[\s\S]*?<\/style>/g, " ")
-      .replace(/<[^>]+>/g, " ")
-      .replace(/&nbsp;/g, " ")
-      .replace(/\s+/g, " ");
+    const home = teamName(item.teams?.home?.name);
+    const away = teamName(item.teams?.away?.name);
 
-    const espnNames = [
-      "Algeria", "Egypt", "Congo DR", "Paraguay", "New Zealand", "Canada",
-      "Ecuador", "Tunisia", "Saudi Arabia", "Ivory Coast", "Austria",
-      "Germany", "Morocco", "South Africa", "Portugal", "France", "Panama",
-      "Ghana", "Senegal", "Uzbekistan", "Haiti", "South Korea", "Switzerland",
-      "Croatia", "Bosnia-Herzegovina", "Uruguay", "Brazil"
-    ];
+    const homeGoals = Number(item.goals?.home ?? 0);
+    const awayGoals = Number(item.goals?.away ?? 0);
 
-    for (const espnName of espnNames) {
-      const canonical = aliases[espnName] || espnName;
-      if (!assignedTeams.has(canonical)) continue;
+    if (assignedTeams.has(home)) goalsConceded[home] += awayGoals;
+    if (assignedTeams.has(away)) goalsConceded[away] += homeGoals;
 
-      const pattern = new RegExp(
-        `${espnName.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)\\s+(\\d+)`
-      );
+    const fixtureId = item.fixture?.id;
+    if (!fixtureId) continue;
 
-      const match = text.match(pattern);
-      if (match) {
-        teams[canonical] = { redCards: Number(match[3]) };
+    const eventData = await api(`/fixtures/events?fixture=${fixtureId}`);
+    const events = eventData.response || [];
+
+    for (const event of events) {
+      const type = event.type;
+      const detail = event.detail;
+      const eventTeam = teamName(event.team?.name);
+
+      if (!assignedTeams.has(eventTeam)) continue;
+
+      if (type === "Card" && String(detail).toLowerCase().includes("red")) {
+        redCards[eventTeam] += 1;
       }
     }
-
-    await fs.writeFile(
-      CARDS_PATH,
-      JSON.stringify({
-        updatedAt: new Date().toISOString(),
-        source: ESPN_DISCIPLINE_URL,
-        teams
-      }, null, 2) + "\n"
-    );
-  } catch (error) {
-    await fs.writeFile(
-      CARDS_PATH,
-      JSON.stringify({
-        ...existing,
-        updatedAt: new Date().toISOString(),
-        source: "Previous red-card data preserved; ESPN discipline fetch failed",
-        error: String(error.message || error),
-        teams
-      }, null, 2) + "\n"
-    );
   }
-  const API_KEY = process.env.API_FOOTBALL_KEY;
 
-const res = await fetch("https://v3.football.api-sports.io/fixtures?league=1&season=2026", {
-  headers: {
-    "x-apisports-key": API_KEY
-  }
-});
+  await fs.writeFile(
+    RESULTS_PATH,
+    JSON.stringify({
+      updatedAt: new Date().toISOString(),
+      source: "API-Football fixtures",
+      teams: Object.fromEntries(
+        participants.map(p => [
+          p.team,
+          { goalsConceded: goalsConceded[p.team] || 0 }
+        ])
+      )
+    }, null, 2) + "\n"
+  );
+
+  await fs.writeFile(
+    CARDS_PATH,
+    JSON.stringify({
+      updatedAt: new Date().toISOString(),
+      source: "API-Football fixture events",
+      teams: Object.fromEntries(
+        participants.map(p => [
+          p.team,
+          { redCards: redCards[p.team] || 0 }
+        ])
+      )
+    }, null, 2) + "\n"
+  );
 }
+
+main();
