@@ -1,0 +1,13 @@
+{
+  "updatedAt": "2026-06-26T11:45:00.000Z",
+  "source": "Manual starter file. GitHub Actions will try to refresh red-card totals.",
+  "teams": {
+    "Algeria": {"redCards": 0}, "Egypt": {"redCards": 0}, "Congo DR": {"redCards": 0}, "Paraguay": {"redCards": 0},
+    "New Zealand": {"redCards": 0}, "Canada": {"redCards": 0}, "Ecuador": {"redCards": 0}, "Tunisia": {"redCards": 0},
+    "Saudi Arabia": {"redCards": 0}, "Côte d'Ivoire": {"redCards": 0}, "Austria": {"redCards": 0}, "Germany": {"redCards": 0},
+    "Morocco": {"redCards": 0}, "South Africa": {"redCards": 0}, "Portugal": {"redCards": 0}, "France": {"redCards": 0},
+    "Panama": {"redCards": 0}, "Ghana": {"redCards": 0}, "Senegal": {"redCards": 0}, "Uzbekistan": {"redCards": 0},
+    "Haiti": {"redCards": 0}, "Korea Republic": {"redCards": 0}, "Switzerland": {"redCards": 0}, "Croatia": {"redCards": 0},
+    "Bosnia and Herzegovina": {"redCards": 0}, "Uruguay": {"redCards": 0}, "Brazil": {"redCards": 0}
+  }
+}
