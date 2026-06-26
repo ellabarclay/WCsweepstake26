@@ -142,4 +142,11 @@ async function updateCards(results) {
       }, null, 2) + "\n"
     );
   }
+  const API_KEY = process.env.API_FOOTBALL_KEY;
+
+const res = await fetch("https://v3.football.api-sports.io/fixtures?league=1&season=2026", {
+  headers: {
+    "x-apisports-key": API_KEY
+  }
+});
 }
