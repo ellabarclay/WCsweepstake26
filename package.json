@@ -1,0 +1,1 @@
+{"name":"wc26-sweepstake","version":"1.0.0","type":"module","scripts":{"update-data":"node scripts/update-data.mjs"},"engines":{"node":">=20"}}

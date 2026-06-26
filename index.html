@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>WC26 Sweepstake</title>
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero">
+      <div class="hero__copy">
+        <p class="eyebrow">World Cup 2026 Sweepstake</p>
+        <h1>Three prizes. One leaderboard hub.</h1>
+        <p>Track the tournament winner, most goals conceded and most red cards for Ella's sweepstake.</p>
+      </div>
+      <div class="hero__panel">
+        <span class="hero__badge">Shared prizes for ties</span>
+        <strong id="lastUpdated">Loading data…</strong>
+        <small id="dataSource">Checking local files</small>
+      </div>
+    </header>
+
+    <nav class="nav" aria-label="Dashboard sections">
+      <button class="nav__button is-active" data-tab="home">Home</button>
+      <button class="nav__button" data-tab="winner">🏆 Winner</button>
+      <button class="nav__button" data-tab="goals">🥅 Goals conceded</button>
+      <button class="nav__button" data-tab="reds">🟥 Red cards</button>
+      <button class="nav__button" data-tab="fixtures">Fixtures</button>
+      <button class="nav__button" data-tab="participants">Participants</button>
+    </nav>
+
+    <main>
+      <section id="home" class="tab is-active">
+        <div class="summary-grid" id="summaryGrid"></div>
+        <div class="panel">
+          <div class="panel__heading">
+            <div>
+              <p class="eyebrow">All prizes</p>
+              <h2>Current leaders</h2>
+            </div>
+          </div>
+          <div class="leaders-strip" id="leadersStrip"></div>
+        </div>
+      </section>
+
+      <section id="winner" class="tab">
+        <div class="panel">
+          <div class="panel__heading">
+            <div><p class="eyebrow">Prize 1</p><h2>World Cup winner</h2></div>
+            <p>The prize goes to the participant whose assigned team wins the tournament.</p>
+          </div>
+          <div id="winnerTable"></div>
+        </div>
+      </section>
+
+      <section id="goals" class="tab">
+        <div class="panel">
+          <div class="panel__heading">
+            <div><p class="eyebrow">Prize 2</p><h2>Most goals conceded</h2></div>
+            <p>Totals are calculated from completed fixtures. Joint highest total = shared prize.</p>
+          </div>
+          <div id="goalsTable"></div>
+        </div>
+      </section>
+
+      <section id="reds" class="tab">
+        <div class="panel">
+          <div class="panel__heading">
+            <div><p class="eyebrow">Prize 3</p><h2>Most red cards</h2></div>
+            <p>Yellow cards are ignored. Joint highest red-card total = shared prize.</p>
+          </div>
+          <div id="redsTable"></div>
+        </div>
+      </section>
+
+      <section id="fixtures" class="tab">
+        <div class="panel">
+          <div class="panel__heading">
+            <div><p class="eyebrow">Matches</p><h2>Fixtures and results</h2></div>
+            <input id="fixtureFilter" class="search" type="search" placeholder="Search team, participant or stage">
+          </div>
+          <div id="fixturesTable"></div>
+        </div>
+      </section>
+
+      <section id="participants" class="tab">
+        <div class="panel">
+          <div class="panel__heading">
+            <div><p class="eyebrow">Draw</p><h2>Participants and teams</h2></div>
+            <p id="participantCount"></p>
+          </div>
+          <div class="participant-grid" id="participantGrid"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="assets/app.js"></script>
+</body>
+</html>
