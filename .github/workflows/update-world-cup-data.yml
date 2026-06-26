@@ -1,4 +1,7 @@
 name: Update World Cup data
+ run: node update-data.mjs
+  env:
+    API_FOOTBALL_KEY: ${{ secrets.API_FOOTBALL_KEY }}
 
 on:
   workflow_dispatch:
