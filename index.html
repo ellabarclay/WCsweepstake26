@@ -1,100 +1,64 @@
 <!doctype html>
-<html lang="en-GB">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>WC26 Sweepstake</title>
-  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    :root{--bg:#07111f;--panel:#0d1b2f;--panel2:#10243f;--text:#eff6ff;--muted:#9fb3c8;--blue:#38bdf8;--gold:#facc15;--green:#34d399;--red:#fb7185;--line:rgba(255,255,255,.12);--shadow:0 20px 60px rgba(0,0,0,.35);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at top left,#14345a,transparent 35%),linear-gradient(135deg,#07111f,#0a1424 45%,#07111f);color:var(--text)}.wrap{max-width:1180px;margin:auto;padding:28px 18px 60px}.hero{display:grid;grid-template-columns:1.5fr .9fr;gap:22px;align-items:stretch}.hero-card,.panel{background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.035));border:1px solid var(--line);border-radius:28px;box-shadow:var(--shadow);backdrop-filter:blur(10px)}.hero-card{padding:34px}.eyebrow{text-transform:uppercase;letter-spacing:.18em;color:var(--blue);font-size:12px;font-weight:800}h1{font-size:clamp(36px,7vw,72px);line-height:.95;margin:12px 0 16px}.lead{color:var(--muted);font-size:18px;max-width:720px}.hero-stats{display:grid;gap:14px}.mini{padding:22px;border-radius:24px;background:linear-gradient(135deg,rgba(56,189,248,.18),rgba(250,204,21,.08));border:1px solid var(--line)}.mini strong{display:block;font-size:34px}.mini span{color:var(--muted)}nav{display:flex;gap:10px;flex-wrap:wrap;margin:24px 0}.tabbtn{border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--text);border-radius:999px;padding:11px 16px;font-weight:800;cursor:pointer}.tabbtn.active{background:var(--text);color:#07111f}.tab{display:none}.tab.active{display:block}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}.panel{padding:22px;margin-bottom:18px}.leader{border-color:rgba(250,204,21,.45);background:linear-gradient(180deg,rgba(250,204,21,.12),rgba(255,255,255,.04))}.panel h2{margin:0 0 14px;font-size:26px}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.person{padding:16px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid var(--line)}.person.leadrow{outline:2px solid rgba(250,204,21,.6)}.flag{font-size:28px}.name{font-size:20px;font-weight:900;margin-top:8px}.team{color:var(--muted);margin-top:4px}.metric{font-size:32px;font-weight:950;margin-top:12px}.bar{height:10px;border-radius:999px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:12px}.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--blue),var(--gold));border-radius:999px}.tablewrap{overflow:auto;border-radius:20px;border:1px solid var(--line)}table{width:100%;border-collapse:collapse;min-width:760px;background:rgba(255,255,255,.035)}th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line)}th{color:#cfe3ff;font-size:12px;text-transform:uppercase;letter-spacing:.12em;background:rgba(255,255,255,.06)}tr.leadrow td{background:rgba(250,204,21,.12)}.pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:rgba(255,255,255,.08);border-radius:999px;padding:6px 10px;font-weight:800}.status{color:var(--muted);font-size:13px}.search{width:100%;padding:14px 16px;border-radius:16px;border:1px solid var(--line);background:rgba(255,255,255,.08);color:var(--text);margin-bottom:14px}.foot{color:var(--muted);font-size:13px;margin-top:18px}@media(max-width:850px){.hero{grid-template-columns:1fr}.grid{grid-template-columns:1fr}h1{font-size:44px}}
+  </style>
 </head>
 <body>
-  <div class="page-shell">
-    <header class="hero">
-      <div class="hero__copy">
-        <p class="eyebrow">World Cup 2026 Sweepstake</p>
-        <h1>Three prizes. One leaderboard hub.</h1>
-        <p>Track the tournament winner, most goals conceded and most red cards for Ella's sweepstake.</p>
-      </div>
-      <div class="hero__panel">
-        <span class="hero__badge">Shared prizes for ties</span>
-        <strong id="lastUpdated">Loading data…</strong>
-        <small id="dataSource">Checking local files</small>
-      </div>
-    </header>
+<div class="wrap">
+  <section class="hero">
+    <div class="hero-card">
+      <div class="eyebrow">World Cup 2026 sweepstake</div>
+      <h1>Three prizes. One live leaderboard.</h1>
+      <p class="lead">Track assigned teams for the World Cup winner, most goals conceded, and most red cards. Tied prizes are shared automatically.</p>
+      <div class="foot" id="updated">Demo data loaded. Replace results in the script or connect an update workflow later.</div>
+    </div>
+    <div class="hero-stats" id="summary"></div>
+  </section>
 
-    <nav class="nav" aria-label="Dashboard sections">
-      <button class="nav__button is-active" data-tab="home">Home</button>
-      <button class="nav__button" data-tab="winner">🏆 Winner</button>
-      <button class="nav__button" data-tab="goals">🥅 Goals conceded</button>
-      <button class="nav__button" data-tab="reds">🟥 Red cards</button>
-      <button class="nav__button" data-tab="fixtures">Fixtures</button>
-      <button class="nav__button" data-tab="participants">Participants</button>
-    </nav>
+  <nav>
+    <button class="tabbtn active" data-tab="home">Home</button>
+    <button class="tabbtn" data-tab="winner">Winner</button>
+    <button class="tabbtn" data-tab="goals">Goals conceded</button>
+    <button class="tabbtn" data-tab="reds">Red cards</button>
+    <button class="tabbtn" data-tab="fixtures">Fixtures</button>
+    <button class="tabbtn" data-tab="participants">Participants</button>
+  </nav>
 
-    <main>
-      <section id="home" class="tab is-active">
-        <div class="summary-grid" id="summaryGrid"></div>
-        <div class="panel">
-          <div class="panel__heading">
-            <div>
-              <p class="eyebrow">All prizes</p>
-              <h2>Current leaders</h2>
-            </div>
-          </div>
-          <div class="leaders-strip" id="leadersStrip"></div>
-        </div>
-      </section>
-
-      <section id="winner" class="tab">
-        <div class="panel">
-          <div class="panel__heading">
-            <div><p class="eyebrow">Prize 1</p><h2>World Cup winner</h2></div>
-            <p>The prize goes to the participant whose assigned team wins the tournament.</p>
-          </div>
-          <div id="winnerTable"></div>
-        </div>
-      </section>
-
-      <section id="goals" class="tab">
-        <div class="panel">
-          <div class="panel__heading">
-            <div><p class="eyebrow">Prize 2</p><h2>Most goals conceded</h2></div>
-            <p>Totals are calculated from completed fixtures. Joint highest total = shared prize.</p>
-          </div>
-          <div id="goalsTable"></div>
-        </div>
-      </section>
-
-      <section id="reds" class="tab">
-        <div class="panel">
-          <div class="panel__heading">
-            <div><p class="eyebrow">Prize 3</p><h2>Most red cards</h2></div>
-            <p>Yellow cards are ignored. Joint highest red-card total = shared prize.</p>
-          </div>
-          <div id="redsTable"></div>
-        </div>
-      </section>
-
-      <section id="fixtures" class="tab">
-        <div class="panel">
-          <div class="panel__heading">
-            <div><p class="eyebrow">Matches</p><h2>Fixtures and results</h2></div>
-            <input id="fixtureFilter" class="search" type="search" placeholder="Search team, participant or stage">
-          </div>
-          <div id="fixturesTable"></div>
-        </div>
-      </section>
-
-      <section id="participants" class="tab">
-        <div class="panel">
-          <div class="panel__heading">
-            <div><p class="eyebrow">Draw</p><h2>Participants and teams</h2></div>
-            <p id="participantCount"></p>
-          </div>
-          <div class="participant-grid" id="participantGrid"></div>
-        </div>
-      </section>
-    </main>
-  </div>
-  <script src="assets/app.js"></script>
+  <main>
+    <section id="home" class="tab active">
+      <div class="grid" id="homePanels"></div>
+    </section>
+    <section id="winner" class="tab"><div class="panel"><h2>🏆 World Cup winner</h2><div class="tablewrap"><table id="winnerTable"></table></div></div></section>
+    <section id="goals" class="tab"><div class="panel"><h2>🥅 Most goals conceded</h2><div class="tablewrap"><table id="goalsTable"></table></div></div></section>
+    <section id="reds" class="tab"><div class="panel"><h2>🟥 Most red cards</h2><div class="tablewrap"><table id="redsTable"></table></div></div></section>
+    <section id="fixtures" class="tab"><div class="panel"><h2>⚽ Fixtures involving assigned teams</h2><input class="search" id="fixtureSearch" placeholder="Search team or participant"><div class="tablewrap"><table id="fixturesTable"></table></div></div></section>
+    <section id="participants" class="tab"><div class="panel"><h2>👥 Participants and teams</h2><div class="cards" id="participantCards"></div></div></section>
+  </main>
+</div>
+<script>
+const PARTICIPANTS=[
+{team:"Algeria",participant:"Ella",code:"DZA",group:"J",flag:"🇩🇿"},{team:"Egypt",participant:"Lauren",code:"EGY",group:"G",flag:"🇪🇬"},{team:"Congo DR",participant:"Paul",code:"COD",group:"K",flag:"🇨🇩"},{team:"Paraguay",participant:"Chloe",code:"PAR",group:"D",flag:"🇵🇾"},{team:"New Zealand",participant:"Peach",code:"NZL",group:"G",flag:"🇳🇿"},{team:"Canada",participant:"Matt N",code:"CAN",group:"B",flag:"🇨🇦"},{team:"Ecuador",participant:"Barry",code:"ECU",group:"E",flag:"🇪🇨"},{team:"Tunisia",participant:"Rachel W-A",code:"TUN",group:"F",flag:"🇹🇳"},{team:"Saudi Arabia",participant:"Matt H",code:"KSA",group:"H",flag:"🇸🇦"},{team:"Côte d'Ivoire",participant:"Samm",code:"CIV",group:"E",flag:"🇨🇮"},{team:"Austria",participant:"Steph",code:"AUT",group:"J",flag:"🇦🇹"},{team:"Germany",participant:"Lucy",code:"GER",group:"E",flag:"🇩🇪"},{team:"Morocco",participant:"Jess",code:"MAR",group:"C",flag:"🇲🇦"},{team:"South Africa",participant:"Holly",code:"RSA",group:"A",flag:"🇿🇦"},{team:"Portugal",participant:"Sue",code:"POR",group:"K",flag:"🇵🇹"},{team:"France",participant:"Daniel",code:"FRA",group:"I",flag:"🇫🇷"},{team:"Panama",participant:"Stu Mc",code:"PAN",group:"L",flag:"🇵🇦"},{team:"Ghana",participant:"Lou Mc",code:"GHA",group:"L",flag:"🇬🇭"},{team:"Senegal",participant:"Bartlett",code:"SEN",group:"I",flag:"🇸🇳"},{team:"Uzbekistan",participant:"Jim",code:"UZB",group:"K",flag:"🇺🇿"},{team:"Haiti",participant:"Tom",code:"HTI",group:"C",flag:"🇭🇹"},{team:"Korea Republic",participant:"Maisie",code:"KOR",group:"A",flag:"🇰🇷"},{team:"Switzerland",participant:"Emily",code:"SUI",group:"B",flag:"🇨🇭"},{team:"Croatia",participant:"Mia",code:"CRO",group:"L",flag:"🇭🇷"},{team:"Bosnia and Herzegovina",participant:"Albertine",code:"BIH",group:"B",flag:"🇧🇦"},{team:"Uruguay",participant:"Mike",code:"URU",group:"H",flag:"🇺🇾"},{team:"Brazil",participant:"Matt P",code:"BRA",group:"C",flag:"🇧🇷"}
+];
+const MATCHES=[
+{date:"2026-06-12T20:00:00+01:00",stage:"Group B",home:"Canada",away:"Bosnia and Herzegovina",homeScore:1,awayScore:1,status:"FT"},{date:"2026-06-13T23:00:00+01:00",stage:"Group C",home:"Brazil",away:"Morocco",homeScore:1,awayScore:1,status:"FT"},{date:"2026-06-15T20:00:00+01:00",stage:"Group G",home:"Egypt",away:"New Zealand",homeScore:3,awayScore:1,status:"FT"},{date:"2026-06-16T20:00:00+01:00",stage:"Group I",home:"France",away:"Senegal",homeScore:3,awayScore:1,status:"FT"},{date:"2026-06-16T23:00:00+01:00",stage:"Group J",home:"Argentina",away:"Algeria",homeScore:3,awayScore:0,status:"FT"},{date:"2026-06-17T18:00:00+01:00",stage:"Group K",home:"Portugal",away:"Congo DR",homeScore:1,awayScore:1,status:"FT"},{date:"2026-06-17T21:00:00+01:00",stage:"Group L",home:"Ghana",away:"Panama",homeScore:1,awayScore:0,status:"FT"},{date:"2026-06-18T20:00:00+01:00",stage:"Group B",home:"Switzerland",away:"Bosnia and Herzegovina",homeScore:4,awayScore:1,status:"FT"},{date:"2026-06-18T23:00:00+01:00",stage:"Group B",home:"Canada",away:"Qatar",homeScore:6,awayScore:0,status:"FT"},{date:"2026-06-19T23:00:00+01:00",stage:"Group D",home:"Turkey",away:"Paraguay",homeScore:0,awayScore:1,status:"FT"},{date:"2026-06-20T21:00:00+01:00",stage:"Group E",home:"Germany",away:"Côte d'Ivoire",homeScore:2,awayScore:1,status:"FT"},{date:"2026-06-21T17:00:00+01:00",stage:"Group H",home:"Spain",away:"Saudi Arabia",homeScore:4,awayScore:0,status:"FT"},{date:"2026-06-21T22:00:00+01:00",stage:"Group H",home:"Uruguay",away:"Cape Verde",homeScore:2,awayScore:2,status:"FT"},{date:"2026-06-22T22:00:00+01:00",stage:"Group I",home:"Norway",away:"Senegal",homeScore:3,awayScore:2,status:"FT"},{date:"2026-06-23T18:00:00+01:00",stage:"Group K",home:"Portugal",away:"Uzbekistan",homeScore:5,awayScore:0,status:"FT"},{date:"2026-06-23T21:00:00+01:00",stage:"Group L",home:"England",away:"Ghana",homeScore:0,awayScore:0,status:"FT"},{date:"2026-06-24T20:00:00+01:00",stage:"Group B",home:"Switzerland",away:"Canada",homeScore:2,awayScore:1,status:"FT"},{date:"2026-06-24T20:00:00+01:00",stage:"Group B",home:"Bosnia and Herzegovina",away:"Qatar",homeScore:3,awayScore:1,status:"FT"},{date:"2026-06-24T23:00:00+01:00",stage:"Group C",home:"Morocco",away:"Haiti",homeScore:4,awayScore:2,status:"FT"},{date:"2026-06-25T21:00:00+01:00",stage:"Group E",home:"Ecuador",away:"Germany",homeScore:2,awayScore:1,status:"FT"},{date:"2026-06-25T21:00:00+01:00",stage:"Group E",home:"Curaçao",away:"Côte d'Ivoire",homeScore:0,awayScore:2,status:"FT"},{date:"2026-06-25T23:00:00+01:00",stage:"Group F",home:"Tunisia",away:"Netherlands",homeScore:1,awayScore:3,status:"FT"},{date:"2026-06-26T20:00:00+01:00",stage:"Group I",home:"Norway",away:"France",status:"Scheduled"},{date:"2026-06-26T20:00:00+01:00",stage:"Group I",home:"Senegal",away:"Iraq",status:"Scheduled"},{date:"2026-06-27T22:00:00+01:00",stage:"Group L",home:"Panama",away:"England",status:"Scheduled"},{date:"2026-06-27T22:00:00+01:00",stage:"Group L",home:"Croatia",away:"Ghana",status:"Scheduled"},{date:"2026-06-28T00:30:00+01:00",stage:"Group K",home:"Colombia",away:"Portugal",status:"Scheduled"},{date:"2026-06-28T00:30:00+01:00",stage:"Group K",home:"Congo DR",away:"Uzbekistan",status:"Scheduled"},{date:"2026-06-28T03:00:00+01:00",stage:"Group J",home:"Algeria",away:"Austria",status:"Scheduled"}
+];
+const REDS={"Algeria":0,"Egypt":0,"Congo DR":0,"Paraguay":0,"New Zealand":0,"Canada":0,"Ecuador":0,"Tunisia":0,"Saudi Arabia":0,"Côte d'Ivoire":0,"Austria":0,"Germany":0,"Morocco":0,"South Africa":0,"Portugal":0,"France":0,"Panama":0,"Ghana":0,"Senegal":0,"Uzbekistan":0,"Haiti":0,"Korea Republic":0,"Switzerland":0,"Croatia":0,"Bosnia and Herzegovina":0,"Uruguay":0,"Brazil":0};
+const $=id=>document.getElementById(id); const teamMap=Object.fromEntries(PARTICIPANTS.map(p=>[p.team,p]));
+function esc(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+function isDone(m){return ["FT","AET","PEN","Final","Full Time"].includes(m.status)}
+function stats(){const s=Object.fromEntries(PARTICIPANTS.map(p=>[p.team,{...p,played:0,conceded:0,scored:0,reds:REDS[p.team]||0,active:true}]));MATCHES.forEach(m=>{if(!isDone(m)||m.homeScore==null||m.awayScore==null)return;if(s[m.home]){s[m.home].played++;s[m.home].scored+=m.homeScore;s[m.home].conceded+=m.awayScore}if(s[m.away]){s[m.away].played++;s[m.away].scored+=m.awayScore;s[m.away].conceded+=m.homeScore}});return Object.values(s)}
+function rank(rows,key){let sorted=[...rows].sort((a,b)=>b[key]-a[key]||a.participant.localeCompare(b.participant));let prev,rank=0,seen=0;return sorted.map(r=>{seen++;if(r[key]!==prev){rank=seen;prev=r[key]}return {...r,rank,isLeader:rank===1}})}
+function row(r,metric,label){return `<tr class="${r.isLeader?'leadrow':''}"><td><span class="pill">${r.rank===1?'🏅 ':''}${r.rank}</span></td><td><strong>${r.flag} ${esc(r.participant)}</strong><div class="status">${esc(r.team)} · Group ${r.group}</div></td><td><strong>${metric}</strong><div class="status">${label}</div></td><td>${r.played}</td></tr>`}
+function table(rows,metric,label){return `<thead><tr><th>Rank</th><th>Participant</th><th>${label}</th><th>Played</th></tr></thead><tbody>${rows.map(r=>row(r,metric(r),label)).join('')}</tbody>`}
+function card(r,metric,label){return `<div class="person ${r.isLeader?'leadrow':''}"><div class="flag">${r.flag}</div><div class="name">${esc(r.participant)}</div><div class="team">${esc(r.team)} · Group ${r.group}</div><div class="metric">${metric}</div><div class="team">${label}</div><div class="bar"><i style="width:${Math.min(100,metric*20)}%"></i></div></div>`}
+function render(){const s=stats();const goals=rank(s,'conceded'), reds=rank(s,'reds');const alive=s.map(x=>({...x,winnerScore:x.active?1:0,rank:x.active?1:99,isLeader:x.active}));$('summary').innerHTML=`<div class="mini"><strong>${PARTICIPANTS.length}</strong><span>assigned teams</span></div><div class="mini"><strong>${goals[0].conceded}</strong><span>highest goals conceded</span></div><div class="mini"><strong>${reds[0].reds}</strong><span>highest red cards</span></div>`;$('homePanels').innerHTML=`<div class="panel leader"><h2>🏆 Winner leaders</h2><div class="cards">${alive.filter(x=>x.isLeader).slice(0,6).map(x=>card(x,0,'Still in contention')).join('')}</div></div><div class="panel leader"><h2>🥅 Goals conceded</h2><div class="cards">${goals.filter(x=>x.isLeader).map(x=>card(x,x.conceded,'Current joint leader')).join('')}</div></div><div class="panel leader"><h2>🟥 Red cards</h2><div class="cards">${reds.filter(x=>x.isLeader).map(x=>card(x,x.reds,'Current joint leader')).join('')}</div></div>`;$('winnerTable').innerHTML=table(alive,x=>x.active?'Still in':'Out','Status');$('goalsTable').innerHTML=table(goals,x=>x.conceded,'Goals conceded');$('redsTable').innerHTML=table(reds,x=>x.reds,'Red cards');renderFixtures();$('participantCards').innerHTML=s.sort((a,b)=>a.participant.localeCompare(b.participant)).map(x=>`<div class="person"><div class="flag">${x.flag}</div><div class="name">${esc(x.participant)}</div><div class="team">${esc(x.team)} · Group ${x.group}</div><div class="status">${x.conceded} conceded · ${x.reds} red cards</div></div>`).join('')}
+function renderFixtures(){const q=($('fixtureSearch').value||'').toLowerCase();const rows=MATCHES.filter(m=>teamMap[m.home]||teamMap[m.away]).filter(m=>[m.home,m.away,m.stage,teamMap[m.home]?.participant,teamMap[m.away]?.participant].join(' ').toLowerCase().includes(q)).map(m=>`<tr><td>${new Intl.DateTimeFormat('en-GB',{dateStyle:'medium',timeStyle:'short'}).format(new Date(m.date))}</td><td>${esc(m.stage)}</td><td>${teamMap[m.home]?.flag||''} ${esc(m.home)}<div class="status">${esc(teamMap[m.home]?.participant||'Unassigned')}</div></td><td><strong>${m.homeScore==null?'v':m.homeScore+'–'+m.awayScore}</strong></td><td>${teamMap[m.away]?.flag||''} ${esc(m.away)}<div class="status">${esc(teamMap[m.away]?.participant||'Unassigned')}</div></td><td>${esc(m.status)}</td></tr>`).join('');$('fixturesTable').innerHTML=`<thead><tr><th>Date</th><th>Stage</th><th>Home</th><th>Score</th><th>Away</th><th>Status</th></tr></thead><tbody>${rows}</tbody>`}
+document.querySelectorAll('.tabbtn').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabbtn').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));b.classList.add('active');$(b.dataset.tab).classList.add('active')});$('fixtureSearch').addEventListener('input',renderFixtures);render();
+</script>
 </body>
 </html>
