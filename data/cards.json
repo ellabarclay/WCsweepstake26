@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-06-26T14:18:05.901Z",
-  "source": "Red cards preserved from data/cards.json. Edit manually if ESPN does not expose card totals for this match.",
+  "updatedAt": "2026-06-27T12:14:47.997Z",
+  "source": "API-Football fixture events",
   "teams": {
     "Algeria": {
       "redCards": 0
